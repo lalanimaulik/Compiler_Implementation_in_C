@@ -1,0 +1,87 @@
+%%
+Tiny       -> PROGRAM Name ':' Consts types Dclns Subprogs1 Body Name '.' => "program";
+Subprogs1  -> (SubProgs)*				=> "subprogs"; 
+SubProgs   -> Function 			        
+	   -> Procedure		;
+Function   -> FUNCTION Name ('(')* Params (')')* ':' Primary ';' Consts types Dclns Body Name ';' => "function";
+Procedure  -> PROCEDURE Name ('(')* Params (')')* ';' Consts types Dclns Body Name ';' => "procedure";
+Params     -> Dcln list ';'				=> "params"
+	   -> 						=> "params";
+Consts	   -> CONST (const ';')*			=> "consts"
+	   -> 						=> "consts";
+const	   -> Name EQUAL Primary			=> "const";
+types	   -> TYPE (type ';')*				=> "types"
+	   ->						=> "types";
+type	   -> Name EQUAL '(' lit ')'			=> "type";
+lit  	   -> Name list ','				=> "lit";
+Dclns      -> VAR (Dcln ';')*				=> "dclns"
+           -> 					     	=> "dclns";
+Dcln       -> Name list ',' ':' Name                    => "var";
+Body       -> BEGINX Statement list ';' END      	=> "block";
+Statement  -> Name ASSIGNMENT Expression          	=> "assign"
+           -> OUTPUT '(' Expression list ',' ')'	=> "output"
+           -> IF Expression THEN Statement
+                            ELSE Statement       	=> "if"
+           -> IF Expression THEN Statement 	    	=> "if"
+           -> WHILE Expression DO Statement      	=> "while"
+	   -> REPEAT Statement list ';' UNTIL Expression => "repeat"
+	   -> LOOP Statement list ';' POOL		=> "loop"
+	   -> EXIT					=> "exit"
+	   -> Name SWAP Name				=> ":=:"
+	   -> FORUPTO Name ASSIGNMENT Expression TO Expression DO Statement => "upto"
+	   -> FORUPTO Name ASSIGNMENT Expression DOWNTO Expression DO Statement => "downto"	
+	   -> CASE Expression OF (Cases)* (Otherwise)? END     => "case"
+	   -> RETURN ('(' Expression ')')*		=> "Return"
+           -> Body
+	   -> READ '(' Name list ',' ')'              	=> "read"
+	   -> Name '(' (Expression list ',')* ')'	=> "call"
+	   ->                                        	=> "<null>";
+
+Cases      -> Seq ':' Statement ';'                     =>"case_clause";
+
+Otherwise  -> OTHERWISE Statement (':')?                =>"otherwise";
+
+Seq        -> Primary				
+	   -> Primary SEQ Primary 	                => "..";	   
+
+Expression -> Term	                         		
+	   -> Term LTE Term				=> "<="
+	   -> Term LT Term				=> "<"
+	   -> Term GTE Term				=> ">="
+	   -> Term EQUAL Term				=> "="
+	   -> Term GT Term				=> ">"
+	   -> Term NOTEQUAL Term			=> "<>"
+	   -> STR 					=> "string";
+
+
+Term       -> Term '+' Mult				=> "+"
+	   -> Term '-' Mult				=> "-"	   
+	   -> Term OR Mult				=> "or"		
+	   -> Mult;
+
+Mult	   -> Unary
+	   -> Mult '*' Unary				=> "*"
+	   -> Mult '/' Unary				=> "/"
+	   -> Mult MOD Unary				=> "mod"
+	   -> Mult AND Unary				=> "and";
+	   
+Unary      -> Expo
+	   -> '-' Expo    	                        => "-"
+	   -> '+' Expo    	                        => "+"
+	   -> NOT Expo    	                        => "not";					
+
+Expo	   -> Primary
+	   -> Primary EXP Expo 				=> "**";
+
+Primary    -> ENDOFFILE					=> "eof"
+	   -> Name
+           -> INTEGER_NUM				=> "<integer>"
+ 	   -> CHARACTER					=> "<char>"
+	   -> SUCC '(' Expression ')'	  		=> "succ"
+	   -> PRED '(' Expression ')'  			=> "pred"
+	   -> ORD '(' Expression ')'			=> "ord"
+	   -> CHR '(' Expression ')'			=> "chr"
+	   -> Name '(' (Expression list ',')* ')'	=> "call"
+	   -> '(' Expression ')';
+
+Name       -> IDENTIFIER				=> "<identifier>";
